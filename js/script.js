@@ -97,7 +97,109 @@ function alustaKaapelit() {
     });
 }
 
+// Sovelluksen tila
+const tila = {
+    lahdeId: null,
+    kohdeId: null,
+    reitti: [],
+    kokonaisViive: 0
+};
+
+// Solmujen valinta klikkaamalla
+function valitseSolmu() {
+    const solmuElementit = document.querySelectorAll('.network-node');
+
+    solmuElementit.forEach((elementti, indeksi) => {
+        elementti.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            // Etsitään lähdesolmun ID
+            const solmuId = verkonSolmut[indeksi].id;
+
+            // Jos ei ole valittua lähdettä, aseta se
+            if (tila.lahdeId === null) {
+                tila.lahdeId = solmuId;
+                korostaSolmut();
+                console.log(`Lähde valittu: ${solmuId}`);
+                return;
+            }
+
+            // Jos lähde on jo valittu, mutta kohde ei, aseta kohde
+            if (tila.kohdeId === null && solmuId !== tila.lahdeId) {
+                tila.kohdeId = solmuId;
+                korostaSolmut();
+                console.log(`Kohde valittu: ${solmuId}`);
+
+                laskeReitti();
+                return;
+            }
+
+            // Jos klikataan jo valittua solmua, nollataan valinta
+            if (solmuId === tila.lahdeId || solmuId === tila.kohdeId) {
+                tila.lahdeId = null;
+                tila.kohdeId = null;
+                tila.reitti = [];
+                korostaSolmut();
+                poistaReitinKorostus();
+                console.log('Valinnat nollattu');
+                return;
+            }
+
+            // Muuten vaihdetaan lähde ja nollataan kohde
+            tila.lahdeId = solmuId;
+            tila.kohdeId = null;
+            tila.reitti = [];
+            korostaSolmut();
+            poistaReitinKorostus();
+            console.log(`Lähde vaihdettu: ${solmuId}`);
+        });
+    });
+}
+
+// Solmujen korostus
+function korostaSolmut() {
+    const solmuElementit = document.querySelectorAll('.network-node');
+    const solmuTeksti = document.querySelectorAll('.node-internal');
+
+    solmuElementit.forEach((elementti, indeksi) => {
+        const solmuId = verkonSolmut[indeksi].id;
+        const tekstiElementti = solmuTeksti[indeksi];
+
+        // Poistetaan vanhat korostukset
+        elementti.style.border = 'none';
+        elementti.style.boxShadow = 'none';
+        elementti.style.background = 'linear-gradient(135deg, var(--neon-cyan) 0%, rgba(0, 240, 255, 0.6) 100%)';
+        tekstiElementti.style.color = '';
+
+        // Lisää uudet korostukset
+        if (solmuId === tila.lahdeId) {
+            elementti.style.border = '3px solid #39FF14';
+            elementti.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
+            elementti.style.background = 'linear-gradient(135deg, var(--neon-green) 0%, rgba(57, 255, 20, 0.6) 100%)';
+            tekstiElementti.style.color = '#39FF14';
+        } else if (solmuId === tila.kohdeId) {
+            elementti.style.border = '3px solid #39FF14';
+            elementti.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
+            elementti.style.background = 'linear-gradient(135deg, var(--neon-green) 0%, rgba(57, 255, 20, 0.6) 100%)';
+            tekstiElementti.style.color = '#39FF14';
+        }
+    });
+}
+
+// Reitin korostuksen poisto
+function poistaReitinKorostus() {
+    const kaapelit = document.querySelectorAll('.network-cable');
+
+    kaapelit.forEach(kaapeli => {
+        kaapeli.style.stroke = 'rgba(0, 240, 255, 0.4)';
+        kaapeli.style.strokeWidth = '3';
+    });
+}
+
+// Piirretaan solmut ja yhteydet
 window.onload = function() {
     alustaSolmut();
     alustaKaapelit();
+    valitseSolmu();
+    console.log('Sovellus käynnistetty! Klikkaa solmuja valitaksesi lähteen ja kohteen.');
 };
