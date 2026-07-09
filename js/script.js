@@ -13,19 +13,19 @@ const verkonSolmut = [
 
 // Määritellään kaapeliyhteydet
 const verkonKaapelit = [
-    { mistä: "SRV-01", mihin: "RTR-A" },
-    { mistä: "RTR-A",  mihin: "RTR-B" },
-    { mistä: "RTR-B",  mihin: "RTR-C" },
-    { mistä: "RTR-C",  mihin: "SRV-02" },
-    { mistä: "SRV-02", mihin: "RTR-D" },
-    { mistä: "RTR-D",  mihin: "RTR-E" },
-    { mistä: "RTR-E",  mihin: "SRV-03" },
-    { mistä: "SRV-03", mihin: "SRV-01" },
-    { mistä: "SRV-01", mihin: "RTR-D" },
-    { mistä: "RTR-A",  mihin: "RTR-D" },
-    { mistä: "RTR-B",  mihin: "RTR-E" },
-    { mistä: "RTR-C",  mihin: "SRV-03" },
-    { mistä: "SRV-02", mihin: "RTR-E" }
+    { mista: "SRV-01", mihin: "RTR-A" },
+    { mista: "RTR-A",  mihin: "RTR-B" },
+    { mista: "RTR-B",  mihin: "RTR-C" },
+    { mista: "RTR-C",  mihin: "SRV-02" },
+    { mista: "SRV-02", mihin: "RTR-D" },
+    { mista: "RTR-D",  mihin: "RTR-E" },
+    { mista: "RTR-E",  mihin: "SRV-03" },
+    { mista: "SRV-03", mihin: "SRV-01" },
+    { mista: "SRV-01", mihin: "RTR-D" },
+    { mista: "RTR-A",  mihin: "RTR-D" },
+    { mista: "RTR-B",  mihin: "RTR-E" },
+    { mista: "RTR-C",  mihin: "SRV-03" },
+    { mista: "SRV-02", mihin: "RTR-E" }
 ];
 
 // Piirtää solmut näytölle
@@ -66,7 +66,7 @@ function alustaKaapelit() {
     verkonKaapelit.forEach(kaapeli => {
 
         // Etsitään lähtösolmun tiedot
-        const lahtoSolmu = verkonSolmut.find(solmu => solmu.id === kaapeli.mistä);
+        const lahtoSolmu = verkonSolmut.find(solmu => solmu.id === kaapeli.mista);
 
         // Etsitään kohdesolmun tiedot
         const kohdeSolmu = verkonSolmut.find(solmu => solmu.id === kaapeli.mihin);
@@ -196,10 +196,205 @@ function poistaReitinKorostus() {
     });
 }
 
+// Viiveet (painoarvot kaapeleille) ja tila
+function arvoViiveet() {
+    verkonKaapelit.forEach(kaapeli => {
+        kaapeli.viive = Math.floor(Math.random() * 145) + 5;
+        kaapeli.tila = 'normal';
+    });
+}
+
+// Kutsutaan alustuksen yhteydessä
+arvoViiveet();
+
+// Apufunktio kaapelin viiveen hakemiseksi ja huomioi tila
+function haeKaapelinViive(kaapeli) {
+    if (kaapeli.tila === 'cut') return Infinity;
+    if (kaapeli.tila === 'jammed') return kaapeli.viive * 5;
+    return kaapeli.viive;
+}
+
+// Dijkstra algoritmi
+function dijkstra(lahdeId, kohdeId) {
+    const solmut = verkonSolmut;
+    const kaapelit = verkonKaapelit;
+
+    // Alusta etäisyydet ja edeltäjät
+    const etaisyydet = {};
+    const edeltajat = {};
+    const kasitelty = {};
+
+    solmut.forEach(s => {
+        etaisyydet[s.id] = Infinity;
+        edeltajat[s.id] = null;
+        kasitelty[s.id] = false;
+    });
+    etaisyydet[lahdeId] = 0;
+
+    // prioriteettijono
+    const jono = [{ id: lahdeId, etaisyys: 0 }];
+
+    while (jono.length > 0) {
+
+        // Järjestetään jonon pienin etaisyys ensimmäiseksi
+        jono.sort((a, b) => a.etaisyys - b.etaisyys);
+        const nykyinen = jono.shift();
+        const nykyinenId = nykyinen.id;
+
+        if (kasitelty[nykyinenId]) continue;
+        kasitelty[nykyinenId] = true;
+
+        // Jos maalissa, voidaan lopettaa
+        if (nykyinenId === kohdeId) break;
+
+        // Käydään läpi kaikki kaapelit, jossa nykyinen solmu mukana
+        kaapelit.forEach(kaapeli => {
+            let naapuri = null;
+            if (kaapeli.mista === nykyinenId) naapuri = kaapeli.mihin;
+            else if (kaapeli.mihin === nykyinenId) naapuri = kaapeli.mista;
+            else return;
+
+            if (kasitelty[naapuri]) return;
+
+            const viive = haeKaapelinViive(kaapeli);
+            if (viive === Infinity) return; // Kaapeli katkaistu
+
+            const uusiEtaisyys = etaisyydet[nykyinenId] + viive;
+            if (uusiEtaisyys < etaisyydet[naapuri]) {
+                etaisyydet[naapuri] = uusiEtaisyys;
+                edeltajat[naapuri] = nykyinenId;
+                jono.push({ id: naapuri, etaisyys: uusiEtaisyys });
+            }
+        });
+    }
+
+    // Jos kohdetta ei tavoiteta
+    if (etaisyydet[kohdeId] === Infinity) {
+        return { reitti: [], kokonaisViive: Infinity };
+    }
+
+    // Rakennetaan reitti takaisinpäin
+    const reitti = [];
+    let nykyinen = kohdeId;
+    
+    while (nykyinen !== null) {
+        reitti.unshift(nykyinen);
+        nykyinen = edeltajat[nykyinen];
+    }
+    if (reitti[0] !== lahdeId) {
+        return { reitti: [], kokonaisViive: etaisyydet[kohdeId] };
+    }
+    return { reitti: reitti, kokonaisViive: etaisyydet[kohdeId] };
+}
+
+// Reitin laskenta ja näyttö
+function laskeReitti() {
+    if (tila.lahdeId === null || tila.kohdeId === null) {
+        tila.reitti = [];
+        tila.kokonaisViive = 0;
+        paivitaReittilista();
+        poistaReitinKorostus();
+        return;
+    }
+
+    const tulos = dijkstra(tila.lahdeId, tila.kohdeId);
+    tila.reitti = tulos.reitti;
+    tila.kokonaisViive = tulos.kokonaisViive;
+
+    if (tila.reitti.length > 1 && tila.kokonaisViive < Infinity) {
+        korostaReitti();
+    } else {
+        poistaReitinKorostus();
+    }
+    paivitaReittilista();
+    console.log('Reitti laskettu:', tila.reitti, 'Viive:', tila.kokonaisViive);
+}
+
+// Reitin korostus
+function korostaReitti() {
+
+    // Poista vanha korostus
+    poistaReitinKorostus();
+
+    // Käy läpi reitin vierekkäiset solmut
+    for (let i = 0; i < tila.reitti.length - 1; i++) {
+        const fromId = tila.reitti[i];
+        const toId = tila.reitti[i + 1];
+
+        // Etsi vastaava kaapeli
+        const kaapeli = verkonKaapelit.find(k => (k.mista === fromId && k.mihin === toId) || (k.mista === toId && k.mihin === fromId));
+        if (!kaapeli) continue;
+
+        // Etsi SVG-viiva (oletetaan että ne on lisätty samass järjestyksessä)
+        const kaapelitSvg = document.querySelectorAll('.network-cable');
+        const indeksi = verkonKaapelit.indexOf(kaapeli);
+        if (indeksi !== - 1 && kaapelitSvg[indeksi]) {
+            kaapelitSvg[indeksi].style.stroke = '#FFD700';
+            kaapelitSvg[indeksi].style.strokeWidth = '6';
+        }
+    }
+}
+
+// Reittilistan päivitys
+function paivitaReittilista() {
+    const listaElementti = document.getElementById('reittilista');
+    if (!listaElementti) return;
+
+    if (tila.reitti.length > 1 && tila.kokonaisViive < Infinity) {
+        const nimet = tila.reitti.map(id => {
+            const solmu = verkonSolmut.find(s => s.id === id);
+            return solmu ? solmu.id : id;
+        });
+        const reittiTeksti = nimet.join(' → ');
+        listaElementti.innerHTML = `
+            <div style="color: #FFD700; font-weight: bold;">Reitti:</div>
+            <div>${reittiTeksti}</div>
+            <div style="color: #8ac4d0; margin-top: 8px;">Kokonaisviive: ${tila.kokonaisViive} ms</div>
+        `;
+    } else if (tila.lahdeId !== null && tila.kohdeId !== null) {
+        listaElementti.innerHTML = `<div style="color: #ff6b8a;">⚠ Yhteyttä ei löytynyt (katkaistu tai ruuhkautunut)</div>`;
+    } else {
+        listaElementti.innerHTML = `<div style="color: #4a6a7a;">Valitse lähde ja kohde</div>`;
+    }
+}
+
+// Resetointi ja uudelleen arvonta
+function uudelleenarvonta() {
+
+    // Arvo uudet viiveet
+    arvoViiveet();
+
+    // Nollaa kaikkien kaapleiden tila
+    verkonKaapelit.forEach(k => k.tila = 'normal');
+
+    // Nollaa valinnat
+    tila.lahdeId = null;
+    tila.kohdeId = null;
+    tila.reitti = [];
+    tila.kokonaisViive = 0;
+
+    // Päivitä näkymä
+    korostaSolmut();
+    poistaReitinKorostus();
+    paivitaReittilista();
+
+    // Päivitä viiveiden näyttö
+    console.log('Verkko uudelleenarvottu!');
+}
+
+// Kytketään reset nappi
+document.addEventListener('DOMContentLoaded', function() {
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', uudelleenarvonta);
+    }
+});
+
 // Piirretaan solmut ja yhteydet
 window.onload = function() {
     alustaSolmut();
     alustaKaapelit();
     valitseSolmu();
+    paivitaReittilista();
     console.log('Sovellus käynnistetty! Klikkaa solmuja valitaksesi lähteen ja kohteen.');
 };
