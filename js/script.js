@@ -1,31 +1,32 @@
 // Tallennetaan solmut taulukkoon objekteina
 // x ja y ovat prosenttiosuuksia, verkkokartta-alueen koosta.
 const verkonSolmut = [
-    { id: "SRV-01", x: 10, y:20 },
-    { id: "RTR-A",  x: 25, y: 5 },
-    { id: "RTR-B",  x: 50, y: 20 },
-    { id: "RTR-C",  x: 80, y: 10 },
-    { id: "SRV-02", x: 90, y: 25 },
-    { id: "RTR-D",  x: 85, y: 75 },
-    { id: "RTR-E",  x: 50, y: 70 },
-    { id: "SRV-03", x: 15, y: 85 }
+    { id: "SRV-01", x: 10, y:10 },
+    { id: "RTR-A",  x: 50, y: 10 },
+    { id: "RTR-B",  x: 90, y: 33 },
+    { id: "SRV-02", x: 90, y: 66 },
+    { id: "RTR-C",  x: 10, y: 50 },
+    { id: "RTR-D",  x: 50, y: 50 },
+    { id: "SRV-03", x: 10, y: 90 },
+    { id: "RTR-E",  x: 50, y: 90 }
 ];
 
 // Määritellään kaapeliyhteydet
 const verkonKaapelit = [
     { mista: "SRV-01", mihin: "RTR-A" },
     { mista: "RTR-A",  mihin: "RTR-B" },
-    { mista: "RTR-B",  mihin: "RTR-C" },
-    { mista: "RTR-C",  mihin: "SRV-02" },
-    { mista: "SRV-02", mihin: "RTR-D" },
+    { mista: "RTR-A",  mihin: "RTR-D" },
+    { mista: "RTR-B",  mihin: "SRV-02" },
+    { mista: "SRV-02", mihin: "RTR-E" },
     { mista: "RTR-D",  mihin: "RTR-E" },
     { mista: "RTR-E",  mihin: "SRV-03" },
-    { mista: "SRV-03", mihin: "SRV-01" },
-    { mista: "SRV-01", mihin: "RTR-D" },
-    { mista: "RTR-A",  mihin: "RTR-D" },
-    { mista: "RTR-B",  mihin: "RTR-E" },
+    { mista: "RTR-C", mihin: "SRV-01" },
+    { mista: "SRV-03", mihin: "RTR-D" },
+    { mista: "RTR-C",  mihin: "RTR-D" },
+    { mista: "RTR-B",  mihin: "RTR-D" },
     { mista: "RTR-C",  mihin: "SRV-03" },
-    { mista: "SRV-02", mihin: "RTR-E" }
+    { mista: "SRV-01", mihin: "RTR-D" },
+    { mista: "RTR-D",  mihin: "SRV-02" }
 ];
 
 // Piirtää solmut näytölle
