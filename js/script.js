@@ -101,7 +101,7 @@ function alustaKaapelit() {
             teksti.setAttribute("y", (lahtoSolmu.y + kohdeSolmu.y) / 2);
             teksti.setAttribute("text-anchor", "middle");
             teksti.setAttribute("dominant-baseline", "middle");
-            teksti.setAttribute("font-size", "4");
+            teksti.setAttribute("font-size", "5");
             teksti.setAttribute("fill", "#8ac4d0");
             teksti.setAttribute("font-family", "Courier New, monospace");
             teksti.setAttribute("font-weight", "bold");
