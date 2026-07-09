@@ -131,3 +131,38 @@ body {
     font-size: 0.75rem;
     margin-top: 10px;
 }
+
+#toolbox {
+    display: none;
+    position: fixed;
+    background: #0D1328;
+    border: 1px solid var(--neon-cyan);
+    border-radius: 8px;
+    padding: 6px 0;
+    min-width: 150px;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+    z-index: 999;
+    backdrop-filter: blur(8px);
+}
+
+#toolbox .tool-item {
+    padding: 8px 20px;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+    font-family: 'Courier New', monospace;
+}
+
+#toolbox .tool-item:hover {
+    background: #1F3A5F;
+    color: var(--neon-cyan);
+}
+
+#toolbox .tool-item.danger {
+    color: #FF6B8A;
+}
+
+#toolbox .tool-item.danger:hover {
+    background: #4D1A2A;
+}
