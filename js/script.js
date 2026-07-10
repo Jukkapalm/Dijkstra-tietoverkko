@@ -103,9 +103,18 @@ function alustaKaapelit() {
 
             viiva.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const rect = svgAlusta.getBoundingClientRect();
-                const toolX = e.clientX;
-                const toolY = e.clientY;
+                let toolX = e.clientX;
+                let toolY = e.clientY;
+
+                const toolboxWidth = 160;
+                const toolboxHeight = 120;
+
+                if (toolX + toolboxWidth > window.innerWidth) {
+                    toolX = window.innerWidth - toolboxWidth - 10;
+                }
+                if (toolY + toolboxHeight > window.innerHeight) {
+                    toolY = window.innerHeight - toolboxHeight - 10;
+                }
 
                 // Tallenna kaapelin indeksi työkalupakkiin
                 toolbox.dataset.indeksi = indeksi;
@@ -117,11 +126,16 @@ function alustaKaapelit() {
             });
 
             const teksti = document.createElementNS(svgNamespace, "text");
+
+            const containerWidth = svgAlusta.clientWidth || 800;
+            const fontSize = Math.max(3, Math.min(6, containerWidth / 160));
+            teksti.setAttribute("font-size", fontSize);
+
             teksti.setAttribute("x", (lahtoSolmu.x + kohdeSolmu.x) / 2);
             teksti.setAttribute("y", (lahtoSolmu.y + kohdeSolmu.y) / 2);
             teksti.setAttribute("text-anchor", "middle");
             teksti.setAttribute("dominant-baseline", "middle");
-            teksti.setAttribute("font-size", "5");
+            teksti.setAttribute("font-size", "4");
             teksti.setAttribute("fill", "#8ac4d0");
             teksti.setAttribute("font-family", "Courier New, monospace");
             teksti.setAttribute("font-weight", "bold");
