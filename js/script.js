@@ -96,8 +96,6 @@ function alustaKaapelit() {
 
             viiva.dataset.indeksi = indeksi;
 
-            console.log(`Viiva: ${lahtoSolmu.id}(${lahtoSolmu.x},${lahtoSolmu.y}) → ${kohdeSolmu.id}(${kohdeSolmu.x},${kohdeSolmu.y})`);
-
             // Liitetään valmis viiva SVG-alustan sisälle näkyviin
             svgAlusta.appendChild(viiva);
 
@@ -129,14 +127,13 @@ function alustaKaapelit() {
 
             const containerWidth = svgAlusta.clientWidth || 800;
             const fontSize = Math.max(3, Math.min(6, containerWidth / 160));
-            teksti.setAttribute("font-size", fontSize);
 
             teksti.setAttribute("x", (lahtoSolmu.x + kohdeSolmu.x) / 2);
             teksti.setAttribute("y", (lahtoSolmu.y + kohdeSolmu.y) / 2);
             teksti.setAttribute("text-anchor", "middle");
             teksti.setAttribute("dominant-baseline", "middle");
             teksti.setAttribute("font-size", "4");
-            teksti.setAttribute("fill", "#8AC4d0");
+            teksti.setAttribute("fill", "#00F0FF");
             teksti.setAttribute("font-family", "Courier New, monospace");
             teksti.setAttribute("font-weight", "bold");
             teksti.textContent = kaapeli.viive + "ms";
@@ -177,7 +174,6 @@ function valitseSolmu() {
             if (tila.lahdeId === null) {
                 tila.lahdeId = solmuId;
                 korostaSolmut();
-                console.log(`Lähde valittu: ${solmuId}`);
                 return;
             }
 
@@ -185,7 +181,6 @@ function valitseSolmu() {
             if (tila.kohdeId === null && solmuId !== tila.lahdeId) {
                 tila.kohdeId = solmuId;
                 korostaSolmut();
-                console.log(`Kohde valittu: ${solmuId}`);
 
                 laskeReitti();
                 return;
@@ -198,7 +193,6 @@ function valitseSolmu() {
                 tila.reitti = [];
                 korostaSolmut();
                 poistaReitinKorostus();
-                console.log('Valinnat nollattu');
                 return;
             }
 
@@ -209,7 +203,6 @@ function valitseSolmu() {
             korostaSolmut();
             poistaReitinKorostus();
             pysaytaAnimaatio();
-            console.log(`Lähde vaihdettu: ${solmuId}`);
         });
     });
 }
@@ -226,19 +219,19 @@ function korostaSolmut() {
         // Poistetaan vanhat korostukset
         elementti.style.border = 'none';
         elementti.style.boxShadow = 'none';
-        elementti.style.background = 'linear-gradient(135deg, var(--neon-cyan) 0%, rgba(0, 240, 255, 0.6) 100%)';
+        elementti.style.background = 'linear-gradient(135deg, #00F0FF 0%, rgba(0, 240, 255, 0.6) 100%)';
         tekstiElementti.style.color = '';
 
         // Lisää uudet korostukset
         if (solmuId === tila.lahdeId) {
             elementti.style.border = '3px solid #39FF14';
             elementti.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
-            elementti.style.background = 'linear-gradient(135deg, var(--neon-green) 0%, rgba(57, 255, 20, 0.6) 100%)';
+            elementti.style.background = 'linear-gradient(135deg, #39FF14 0%, rgba(57, 255, 20, 0.6) 100%)';
             tekstiElementti.style.color = '#39FF14';
         } else if (solmuId === tila.kohdeId) {
             elementti.style.border = '3px solid #39FF14';
             elementti.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
-            elementti.style.background = 'linear-gradient(135deg, var(--neon-green) 0%, rgba(57, 255, 20, 0.6) 100%)';
+            elementti.style.background = 'linear-gradient(135deg, #39FF14 0%, rgba(57, 255, 20, 0.6) 100%)';
             tekstiElementti.style.color = '#39FF14';
         }
     });
@@ -255,8 +248,8 @@ function poistaReitinKorostus() {
 
         // Palauta väri tilan mukaan
         let vari = 'rgba(0, 240, 255, 0.4)';
-        if (verkonKaapeli.tila === 'cut') vari = '#FF3355';
-        else if (verkonKaapeli.tila === 'jammed') vari = '#FF8833';
+        if (verkonKaapeli.tila === 'cut') vari = '#FF0000';
+        else if (verkonKaapeli.tila === 'jammed') vari = '#FFD600';
 
         kaapeli.style.stroke = vari;
         kaapeli.style.strokeWidth = '3';
@@ -267,14 +260,25 @@ function poistaReitinKorostus() {
         const verkonKaapeli = verkonKaapelit[indeksi];
         if (!verkonKaapeli) return;
 
-        let vari = '#8AC4d0';
+        let vari = '#00F0FF';
         let viiveTeksti = verkonKaapeli.viive + 'ms';
 
         if (verkonKaapeli.tila === 'cut') {
-            vari = '#FF6B8A';
+            vari = '#FF0000';
+            teksti.setAttribute('stroke', '#0A0B10');
+            teksti.setAttribute('stroke-width', '1.5');
+            teksti.setAttribute('paint-order', 'stroke fill');
         } else if (verkonKaapeli.tila === 'jammed') {
-            vari = '#F5A042';
+            vari = '#FF0000';
             viiveTeksti = (verkonKaapeli.viive * 2) + 'ms';
+            teksti.setAttribute('stroke', '#0A0B10');
+            teksti.setAttribute('stroke-width', '1.5');
+            teksti.setAttribute('paint-order', 'stroke fill');
+        } else {
+            vari = '#00F0FF';
+            teksti.removeAttribute('stroke');
+            teksti.removeAttribute('stroke-width');
+            teksti.removeAttribute('paint-order');
         }
 
         teksti.setAttribute('fill', vari);
@@ -295,22 +299,30 @@ function paivitaKaapelinVari(indeksi) {
 
     // Aseta väri tilan mukaan
     let vari = 'rgba(0, 240, 255, 0.4)';
-    let tekstivari = '#8AC4d0';
+    let tekstivari = '#00F0FF';
     let viiveTeksti = kaapeli.viive + 'ms';
 
     if (kaapeli.tila === 'cut') {
-        vari = '#FF3355';
-        tekstivari = '#FF6B8A';
+        vari = '#FF0000';
+        tekstivari = '#FF0000';
         viiva.style.strokeDasharray = '6,6';
     } else if (kaapeli.tila === 'jammed') {
-        vari = '#FF8833';
-        tekstivari = '#FF3355';
+        vari = '#FFD600';
+        tekstivari = '#FF0000';
         viiva.style.strokeDasharray = 'none';
         viiveTeksti = (kaapeli.viive * 2) + 'ms';
+
+        teksti.setAttribute('stroke', '#0A0B10');
+        teksti.setAttribute('stroke-width', '1.5');
+        teksti.setAttribute('paint-order', 'stroke fill');
     } else {
         vari = 'rgba(0, 240, 255, 0.4)';
-        tekstivari = '#8AC4D0';
+        tekstivari = '#00F0FF';
         viiva.style.strokeDasharray = 'none';
+
+        teksti.removeAttribute('stroke');
+        teksti.removeAttribute('stroke-width');
+        teksti.removeAttribute('paint-order');
     }
 
     viiva.style.stroke = vari;
@@ -431,7 +443,6 @@ function laskeReitti() {
         poistaReitinKorostus();
     }
     paivitaReittilista();
-    console.log('Reitti laskettu:', tila.reitti, 'Viive:', tila.kokonaisViive);
 
     // Käynnistä tai pysäytä animaatio reitin mukaan
     if (tila.reitti.length > 1 && tila.kokonaisViive < Infinity) {
@@ -464,13 +475,16 @@ function korostaReitti() {
         const indeksi = verkonKaapelit.indexOf(kaapeli);
 
         if (indeksi !== - 1 && kaapelitSvg[indeksi]) {
-            kaapelitSvg[indeksi].style.stroke = '#C9A84C';
-            kaapelitSvg[indeksi].style.strokeWidth = '3';
+            kaapelitSvg[indeksi].style.stroke = '#39FF14';
+            kaapelitSvg[indeksi].style.strokeWidth = '2';
             kaapelitSvg[indeksi].style.strokeDasharray = 'none';
         }
 
         if (indeksi !== -1 && tekstit[indeksi]) {
             tekstit[indeksi].setAttribute('fill', '#39FF14');
+            tekstit[indeksi].setAttribute('stroke', '#0A0B10');
+            tekstit[indeksi].setAttribute('stroke-width', '1.5');
+            tekstit[indeksi].setAttribute('paint-order', 'stroke fill');
         }
     }
 }
@@ -487,9 +501,9 @@ function paivitaReittilista() {
         });
         const reittiTeksti = nimet.join(' → ');
         listaElementti.innerHTML = `
-            <div style="color: #FFD700; font-weight: bold;">Reitti:</div>
+            <div style="color: #FFD600; font-weight: bold;">Reitti:</div>
             <div>${reittiTeksti}</div>
-            <div style="color: #8AC4d0; margin-top: 8px;">Kokonaisviive: ${tila.kokonaisViive} ms</div>
+            <div style="color: #00F0FF; margin-top: 8px;">Kokonaisviive: ${tila.kokonaisViive} ms</div>
         `;
     } else if (tila.lahdeId !== null && tila.kohdeId !== null) {
         listaElementti.innerHTML = `<div style="color: #FF6B8A;">⚠ Yhteyttä ei löytynyt (katkaistu tai ruuhkautunut)</div>`;
@@ -525,9 +539,6 @@ function uudelleenarvonta() {
     korostaSolmut();
     poistaReitinKorostus();
     paivitaReittilista();
-
-    // Päivitä viiveiden näyttö
-    console.log('Verkko uudelleenarvottu!');
 }
 
 // Kytketään reset nappi
@@ -619,9 +630,6 @@ function luoPaketit() {
         });
 
         svg.appendChild(circle);
-
-        // Päivitetään kaikkien pakettien sijainti
-        paivitaKaikkiPaketit();
     }
 }
 
@@ -716,5 +724,4 @@ window.onload = function() {
     alustaKaapelit();
     valitseSolmu();
     paivitaReittilista();
-    console.log('Sovellus käynnistetty! Klikkaa solmuja valitaksesi lähteen ja kohteen.');
 };
